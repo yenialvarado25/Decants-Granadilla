@@ -1,8 +1,14 @@
 <div class="editor">
   <div class="editor-heading">
     <div>
-      <span>INVENTARIO / NUEVO PRODUCTO</span>
-      <h2>Editor de perfume</h2>
+      
+      <span>
+        INVENTARIO / {{ esEdicion ? 'EDITAR PRODUCTO' : 'NUEVO PRODUCTO' }}
+      </span>
+      <h2>
+          {{ esEdicion ? 'Editar perfume' : 'Nuevo perfume' }}
+      </h2>
+
       <p>Configura el producto y sus presentaciones.</p>
     </div>
 
@@ -152,10 +158,19 @@
         Cancelar
       </button>
 
-      <button type="submit" class="primary"
-        [disabled]="guardando() || form.invalid">
-        {{ guardando() ? 'GUARDANDO...' : 'GUARDAR PRODUCTO ↗' }}
+      
+      <button
+         type="submit"
+         class="primary"
+         [disabled]="guardando() || form.invalid"
+         >
+         @if (guardando()) {
+         GUARDANDO...
+         } @else {
+         {{ esEdicion ? 'GUARDAR CAMBIOS ↗' : 'GUARDAR PRODUCTO ↗' }}
+        }
       </button>
+
     </div>
   </form>
 </div>

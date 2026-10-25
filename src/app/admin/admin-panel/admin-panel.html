@@ -169,6 +169,15 @@
         
         @case ('nuevo-producto') {
          <app-admin-product-form
+         [producto]="null"
+        (guardado)="alGuardarProducto($event)"
+        (cancelar)="navegar('productos')"
+         />
+        }
+
+        @case ('editar-producto') {
+         <app-admin-product-form
+         [producto]="productoSeleccionado()"
         (guardado)="alGuardarProducto($event)"
         (cancelar)="navegar('productos')"
          />
@@ -208,6 +217,7 @@
                     <th>PRECIO DESDE</th>
                     <th>STOCK</th>
                     <th>ESTADO</th>
+                    <th>ACCIONES</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -220,15 +230,38 @@
                       <td>{{ p.categoria }}</td>
                       <td>{{ precio(p.precioDesde) }}</td>
                       <td>{{ p.stock }}</td>
+                      
                       <td>
-                        <span class="status">
+                        <span class="status" [class.inactive]="!p.activo">
                           {{ p.activo ? 'Activo' : 'Inactivo' }}
                         </span>
                       </td>
+
+                      <td class="product-actions">
+                        <button
+                          type="button"
+                          class="edit-product-button"
+                          (click)="editarProducto(p.id)"
+                          >
+                          ✎ Editar
+                        </button>
+
+                        <button
+                          type="button"
+                          class="publish-product-button"
+                          [disabled]="cambiandoPublicacion() === p.id"
+                          (click)="alternarPublicacion(p.id)"
+                        >
+                          {{ cambiandoPublicacion() === p.id
+                          ? 'Guardando...'
+                          : p.activo ? 'Desactivar' : 'Publicar' }}
+                          </button>
+                          </td>
+
                     </tr>
                   } @empty {
                     <tr>
-                      <td colspan="5">No se encontraron productos.</td>
+                      <td colspan="6">No se encontraron productos.</td>
                     </tr>
                   }
                 </tbody>

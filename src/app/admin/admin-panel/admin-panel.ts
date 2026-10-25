@@ -16,6 +16,7 @@ type Seccion =
   | 'dashboard'
   | 'productos'
   | 'nuevo-producto'
+  | 'editar-producto'
   | 'packs'
   | 'configuracion';
 
@@ -93,6 +94,24 @@ export class AdminPanel {
     }))
   );
 
+  
+  readonly productoSeleccionado = signal<ProductoFirebase | null>(null);
+
+  editarProducto(id: string): void {
+    const producto = this.productosFirebase().find(
+      p => p.id === id
+    );
+
+    if (!producto) {
+      this.errorProductos.set('No se encontró el producto.');
+      return;
+    }
+
+    this.productoGuardado.set('');
+    this.productoSeleccionado.set(producto);
+    this.navegar('editar-producto');
+    }
+
   // ====================================
   // ESTADÍSTICAS DEL DASHBOARD
   // ====================================
@@ -138,6 +157,9 @@ export class AdminPanel {
       case 'nuevo-producto':
         return 'Nuevo producto';
 
+      case 'editar-producto':
+        return 'Editar producto';
+        
       case 'packs':
         return 'Packs promocionales';
 
@@ -153,22 +175,30 @@ export class AdminPanel {
   // AGREGAR PRODUCTOS
   // ====================================
 
+  
   abrirNuevoProducto(): void {
+    this.productoSeleccionado.set(null);
     this.productoGuardado.set('');
     this.navegar('nuevo-producto');
   }
 
-  async alGuardarProducto(id: string): Promise<void> {
-    this.productoGuardado.set(
-      `Producto guardado en Firebase correctamente. ID: ${id}`
-    );
+    async alGuardarProducto(id: string): Promise<void> {
+      const eraEdicion = this.seccion() === 'editar-producto';
 
-    // Actualizar la lista con los productos reales
-    await this.cargarProductos();
+      await this.cargarProductos();
 
-    // Regresar a la tabla de productos
-    this.navegar('productos');
-  }
+      if (this.errorProductos()) return;
+
+      this.productoGuardado.set(
+      eraEdicion
+          ? 'Producto actualizado correctamente en Firebase.'
+          : 'Producto registrado correctamente en Firebase.'
+      );
+
+      this.productoSeleccionado.set(null);
+      this.navegar('productos');
+    }
+
 
   // ====================================
   // FORMATO DE PRECIOS
@@ -177,7 +207,50 @@ export class AdminPanel {
   precio(valor: number): string {
     return `S/ ${valor.toFixed(2)}`;
   }
+   // CAMBIANDO PUBLICACION DE PRODUCTOS
+   // ====================================
+   
+readonly cambiandoPublicacion = signal<string | null>(null);
 
+async alternarPublicacion(id: string): Promise<void> {
+  if (this.cambiandoPublicacion()) return;
+
+  const producto = this.productosFirebase().find(p => p.id === id);
+  if (!producto) return;
+
+  this.cambiandoPublicacion.set(id);
+  this.errorProductos.set('');
+
+  try {
+    const nuevoEstado = !producto.publicado;
+
+    await this.productosService.cambiarPublicacion(
+      id,
+      nuevoEstado
+    );
+
+    this.productosFirebase.update(productos =>
+      productos.map(p =>
+        p.id === id
+          ? { ...p, publicado: nuevoEstado }
+          : p
+      )
+    );
+
+    this.productoGuardado.set(
+      nuevoEstado
+        ? 'Producto publicado correctamente.'
+        : 'Producto desactivado correctamente.'
+    );
+  } catch (error) {
+    console.error('Error actualizando publicación:', error);
+    this.errorProductos.set(
+      'No se pudo cambiar el estado del producto.'
+    );
+  } finally {
+    this.cambiandoPublicacion.set(null);
+  }
+}
   // ====================================
   // CERRAR SESIÓN
   // ====================================

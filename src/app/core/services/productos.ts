@@ -4,7 +4,9 @@ import {
   addDoc,
   getDocs,
   query,
-  orderBy
+  orderBy,
+  doc,
+  updateDoc
 } from 'firebase/firestore';
 
 import { firestore } from '../firebase.config';
@@ -29,6 +31,7 @@ export interface ProductoFirebase {
   presentaciones: PresentacionProducto[];
   publicado: boolean;
   creadoEn: number;
+  actualizadoEn?: number;         
 }
 
 @Injectable({
@@ -64,5 +67,30 @@ export class ProductosService {
 
     return resultado.id;
   }
+
+  async actualizar(
+    id: string,
+    producto: Partial<Omit<ProductoFirebase, 'id' | 'creadoEn'>>
+  ): Promise<void> {
+    const referencia = doc(firestore, 'productos', id);
+
+    await updateDoc(referencia, {
+    ...producto,
+    actualizadoEn: Date.now()
+    });
+}
+    async cambiarPublicacion(
+      id: string,
+      publicado: boolean
+    ): Promise<void> {
+    const referencia = doc(firestore, 'productos', id);
+
+    await updateDoc(referencia, {
+    publicado,
+    actualizadoEn: Date.now()
+    });
+}
+
+
 }
 
