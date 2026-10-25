@@ -26,7 +26,7 @@ interface CarritoItem { clave: string; nombre: string; detalle: string; precio: 
 
 export class App {
   private readonly router = inject(Router);
-readonly esAdmin = signal(false);
+readonly esAdmin = signal(this.router.url.startsWith('/admin'));
 
 constructor() {
   this.router.events.pipe(

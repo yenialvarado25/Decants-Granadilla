@@ -1,0 +1,56 @@
+<div class="login-page">
+  <a href="/" class="back-link">← VOLVER A LA TIENDA</a>
+
+  <div class="login-card">
+    <div class="login-brand">
+      <img src="/Logo.jpg" alt="Decants Granadilla">
+      <div>
+        <strong>DECANTS</strong>
+        <span>GRANADILLA / ADMIN</span>
+      </div>
+    </div>
+
+    <span class="eyebrow">ACCESO PRIVADO</span>
+    <h1>BIENVENIDO<br><em>DE NUEVO.</em></h1>
+    <p>Ingresa tus credenciales para continuar.</p>
+
+    <form (ngSubmit)="ingresar()">
+      <label for="correo">CORREO ELECTRÓNICO</label>
+      <input
+        id="correo"
+        type="email"
+        name="correo"
+        [(ngModel)]="correo"
+        autocomplete="username"
+        placeholder="administrador@ejemplo.com"
+        required
+      >
+
+      <label for="contrasena">CONTRASEÑA</label>
+      <input
+        id="contrasena"
+        type="password"
+        name="contrasena"
+        [(ngModel)]="contrasena"
+        autocomplete="current-password"
+        placeholder="Ingresa tu contraseña"
+        required
+      >
+
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+
+      <button
+        type="submit"
+        [disabled]="cargando() || !correo || !contrasena"
+      >
+        {{ cargando() ? 'VERIFICANDO...' : 'INGRESAR AL PANEL ↗' }}
+      </button>
+    </form>
+
+    <div class="login-bottom">
+      DECANTS GRANADILLA · PANEL DE ADMINISTRACIÓN
+    </div>
+  </div>
+</div>

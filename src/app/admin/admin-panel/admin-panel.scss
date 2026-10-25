@@ -334,3 +334,25 @@ table {
   .welcome { padding: 22px; }
   .panel { padding: 15px; }
 }
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 15px;
+  margin-top: 15px;
+  border: 1px solid rgba(220, 94, 155, 0.35);
+  border-radius: 8px;
+  background: rgba(220, 94, 155, 0.08);
+  color: #f1a6c8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s ease;
+
+  &:hover {
+    background: rgba(220, 94, 155, 0.18);
+  }
+}
+

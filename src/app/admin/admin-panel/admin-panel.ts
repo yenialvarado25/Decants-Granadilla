@@ -1,5 +1,8 @@
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { signOut } from 'firebase/auth';
+import { firebaseAuth } from '../../core/firebase.config';
 
 type Seccion = 'dashboard' | 'productos' | 'packs' | 'configuracion';
 
@@ -21,6 +24,19 @@ interface ProductoAdmin {
   styleUrl: './admin-panel.scss'
 })
 export class AdminPanel {
+  
+constructor(private router: Router) {}
+
+async cerrarSesion(): Promise<void> {
+  try {
+    await signOut(firebaseAuth);
+    await this.router.navigateByUrl('/admin/login');
+  } catch (error) {
+    console.error('No se pudo cerrar sesión:', error);
+    alert('Ocurrió un problema al cerrar la sesión.');
+  }
+}
+
   readonly seccion = signal<Seccion>('dashboard');
   readonly menuAbierto = signal(false);
   readonly busqueda = signal('');

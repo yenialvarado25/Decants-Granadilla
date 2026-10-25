@@ -1,0 +1,142 @@
+
+:host {
+  display: block;
+  min-height: 100dvh;
+  color: #eef4ff;
+}
+
+.login-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 65px 20px;
+  background:
+    radial-gradient(circle at 85% 15%, #3265c840, transparent 40%),
+    radial-gradient(circle at 15% 85%, #7459a728, transparent 35%),
+    #070e1b;
+}
+
+.back-link {
+  position: absolute;
+  top: 30px;
+  left: 5%;
+  color: #aebcd4;
+  text-decoration: none;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.login-card {
+  width: min(460px, 100%);
+  padding: clamp(25px, 5vw, 45px);
+  background: #101e33;
+  border: 1px solid #ffffff1c;
+  border-top: 3px solid #dc5e9b;
+  box-shadow: 0 25px 70px #0006;
+
+  .eyebrow {
+    color: #8db6de;
+    font-size: 11px;
+    letter-spacing: 3px;
+  }
+
+  h1 {
+    font: 800 clamp(36px, 6vw, 51px)/1.05
+      Impact, 'Arial Narrow', sans-serif;
+    margin: 22px 0;
+
+    em {
+      font-style: normal;
+      color: #dc5e9b;
+    }
+  }
+
+  p {
+    color: #aebcd4;
+    line-height: 1.7;
+  }
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 45px;
+
+  img {
+    width: 58px;
+    height: 58px;
+    background: white;
+    border-radius: 9px;
+    object-fit: contain;
+  }
+
+  strong {
+    display: block;
+    font-size: 23px;
+  }
+
+  span {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #9ca9c7;
+  }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 30px;
+  gap: 12px;
+
+  label {
+    font-size: 11px;
+    letter-spacing: 1px;
+    font-weight: 700;
+    margin-top: 12px;
+  }
+
+  input {
+    width: 100%;
+    min-height: 50px;
+    padding: 14px;
+    border: 1px solid #ffffff25;
+    border-radius: 7px;
+    background: #081426;
+    color: white;
+
+    &:focus {
+      outline: 2px solid #3265c8;
+    }
+  }
+
+  button {
+    margin-top: 18px;
+    min-height: 52px;
+    border: 0;
+    border-radius: 7px;
+    color: white;
+    background: #3265c8;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+
+    &:hover { background: #7459a7; }
+    &:disabled { opacity: .55; cursor: not-allowed; }
+  }
+
+  .error {
+    color: #ff9ba7;
+    font-size: 12px;
+  }
+}
+
+.login-bottom {
+  border-top: 1px solid #ffffff1a;
+  margin-top: 35px;
+  padding-top: 20px;
+  color: #8998b1;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-align: center;
+}
