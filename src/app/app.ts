@@ -1,5 +1,8 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs';
 
 type Categoria = 'nicho' | 'arabe' | 'disenador';
 type Genero = 'hombre' | 'mujer' | 'unisex';
@@ -16,11 +19,27 @@ interface CarritoItem { clave: string; nombre: string; detalle: string; precio: 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
+
 export class App {
+  private readonly router = inject(Router);
+readonly esAdmin = signal(false);
+
+constructor() {
+  this.router.events.pipe(
+    filter((event): event is NavigationEnd =>
+      event instanceof NavigationEnd
+    ),
+    takeUntilDestroyed()
+  ).subscribe(event => {
+    this.esAdmin.set(
+      event.urlAfterRedirects.startsWith('/admin')
+    );
+  });
+}
   // Número del negocio: prefijo 51 + 9 dígitos, sin espacios ni signos.
   readonly whatsapp = '51921435182';
   readonly categorias: { id: Categoria; titulo: string; numero: string; descripcion: string }[] = [
@@ -122,4 +141,5 @@ export class App {
     const detalle = this.carrito().map(i => `• ${i.nombre} (${i.detalle}) x${i.cantidad}: ${this.precio(i.precio * i.cantidad)}`).join('\n');
     this.abrirMensaje(`Hola, Decants Granadilla. Quiero consultar este pedido:\n\n${detalle}\n\nTotal referencial: ${this.precio(this.total())}\n¿Me confirman disponibilidad, contenido de packs y envío?`);
   }
+  
 }

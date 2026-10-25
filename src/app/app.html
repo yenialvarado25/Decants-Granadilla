@@ -1,4 +1,4 @@
-
+@if (!esAdmin()) {
 <div class="announcement">
   <span>DECANTS GRANADILLA</span>
   <span>NICHO / ÁRABES / DISEÑADOR / PACKS</span>
@@ -519,6 +519,7 @@
 
   <a href="#inicio">VOLVER ARRIBA ↑</a>
 </div>
+</footer>
 
 <!-- WHATSAPP FLOTANTE -->
 <button
@@ -627,3 +628,6 @@
     </div>
   </aside>
 }
+}
+
+<router-outlet />

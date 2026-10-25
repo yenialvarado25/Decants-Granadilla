@@ -1,0 +1,241 @@
+<div class="admin-shell">
+  <aside class="sidebar" [class.open]="menuAbierto()">
+    <a href="/" class="admin-brand">
+      <img src="/Logo.jpg" alt="Decants Granadilla">
+      <div>
+        <strong>DECANTS</strong>
+        <span>ADMIN CONSOLE</span>
+      </div>
+    </a>
+
+    <div class="sidebar-label">GENERAL</div>
+
+    <nav aria-label="Menú del administrador">
+      <button
+        type="button"
+        [class.active]="seccion() === 'dashboard'"
+        (click)="navegar('dashboard')">
+        <span>▦</span> Dashboard
+      </button>
+
+      <button
+        type="button"
+        [class.active]="seccion() === 'productos'"
+        (click)="navegar('productos')">
+        <span>◈</span> Productos
+      </button>
+
+      <button
+        type="button"
+        [class.active]="seccion() === 'packs'"
+        (click)="navegar('packs')">
+        <span>▣</span> Packs promocionales
+      </button>
+
+      <div class="sidebar-label">SISTEMA</div>
+
+      <button
+        type="button"
+        [class.active]="seccion() === 'configuracion'"
+        (click)="navegar('configuracion')">
+        <span>⚙</span> Configuración
+      </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <span>DECANTS GRANADILLA</span>
+      <small>Panel en desarrollo · v0.1</small>
+      <a href="/">← Volver a la tienda</a>
+    </div>
+  </aside>
+
+  @if (menuAbierto()) {
+    <button
+      class="menu-backdrop"
+      type="button"
+      aria-label="Cerrar menú"
+      (click)="menuAbierto.set(false)">
+    </button>
+  }
+
+  <div class="admin-main">
+    <header class="admin-header">
+      <button
+        class="mobile-menu"
+        type="button"
+        (click)="menuAbierto.set(!menuAbierto())"
+        aria-label="Abrir menú">
+        ☰
+      </button>
+
+      <div>
+        <span class="breadcrumb">ADMINISTRACIÓN / {{ titulo() }}</span>
+        <h1>{{ titulo() }}</h1>
+      </div>
+
+      <div class="header-right">
+        <span class="demo-indicator">MODO DEMOSTRACIÓN</span>
+        <span class="avatar">DG</span>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      @switch (seccion()) {
+        @case ('dashboard') {
+          <div class="welcome">
+            <div>
+              <span class="eyebrow">VISIÓN GENERAL</span>
+              <h2>Control de tu perfumería.</h2>
+              <p>
+                Visualiza productos y prepara la administración
+                de Decants Granadilla desde un solo lugar.
+              </p>
+            </div>
+            <button type="button" (click)="navegar('productos')">
+              VER PRODUCTOS ↗
+            </button>
+          </div>
+
+          <div class="stats">
+            <article>
+              <span>PRODUCTOS</span>
+              <strong>{{ totalProductos() }}</strong>
+              <small>Registrados en la demostración</small>
+            </article>
+            <article>
+              <span>STOCK BAJO</span>
+              <strong>{{ stockBajo() }}</strong>
+              <small>Productos con 8 unidades o menos</small>
+            </article>
+            <article>
+              <span>PACKS</span>
+              <strong>0</strong>
+              <small>Configuración pendiente</small>
+            </article>
+            <article>
+              <span>PEDIDOS REGISTRADOS</span>
+              <strong>0</strong>
+              <small>Sin base de datos conectada</small>
+            </article>
+          </div>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">INVENTARIO</span>
+                <h3>Vista previa de productos</h3>
+              </div>
+              <button type="button" (click)="navegar('productos')">
+                VER TODOS ↗
+              </button>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>PRODUCTO</th>
+                    <th>CATEGORÍA</th>
+                    <th>DESDE</th>
+                    <th>STOCK</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of productos(); track p.id) {
+                    <tr>
+                      <td>
+                        <strong>{{ p.nombre }}</strong>
+                        <small>{{ p.marca }}</small>
+                      </td>
+                      <td>{{ p.categoria }}</td>
+                      <td>{{ precio(p.precioDesde) }}</td>
+                      <td>{{ p.stock }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+        }
+
+        @case ('productos') {
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">CATÁLOGO</span>
+                <h3>Inventario de productos</h3>
+              </div>
+              <span class="demo-indicator">SOLO LECTURA</span>
+            </div>
+
+            <input
+              class="search-input"
+              type="search"
+              placeholder="Buscar por nombre, marca o categoría..."
+              [ngModel]="busqueda()"
+              (ngModelChange)="busqueda.set($event)"
+            >
+
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>PRODUCTO</th>
+                    <th>CATEGORÍA</th>
+                    <th>PRECIO DESDE</th>
+                    <th>STOCK</th>
+                    <th>ESTADO</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of resultados(); track p.id) {
+                    <tr>
+                      <td>
+                        <strong>{{ p.nombre }}</strong>
+                        <small>{{ p.marca }}</small>
+                      </td>
+                      <td>{{ p.categoria }}</td>
+                      <td>{{ precio(p.precioDesde) }}</td>
+                      <td>{{ p.stock }}</td>
+                      <td>
+                        <span class="status">
+                          {{ p.activo ? 'Activo' : 'Inactivo' }}
+                        </span>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="5">No se encontraron productos.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+        }
+
+        @case ('packs') {
+          <section class="panel empty-panel">
+            <span class="eyebrow">PRÓXIMA FUNCIÓN</span>
+            <h2>Packs promocionales</h2>
+            <p>
+              Aquí configuraremos los packs con sus perfumes,
+              tamaños, fotografías, precios y stock.
+            </p>
+          </section>
+        }
+
+        @case ('configuracion') {
+          <section class="panel empty-panel">
+            <span class="eyebrow">CONFIGURACIÓN</span>
+            <h2>Tu negocio</h2>
+            <p>
+              Aquí configuraremos datos de contacto,
+              políticas de la tienda y preferencias generales.
+            </p>
+          </section>
+        }
+      }
+    </main>
+  </div>
+</div>
+
