@@ -150,7 +150,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (p of productos(); track p.id) {
+                  @for (p of inventario(); track p.id) {
                     <tr>
                       <td>
                         <strong>{{ p.nombre }}</strong>
@@ -166,6 +166,13 @@
             </div>
           </section>
         }
+        
+        @case ('nuevo-producto') {
+         <app-admin-product-form
+        (guardado)="alGuardarProducto($event)"
+        (cancelar)="navegar('productos')"
+         />
+        }
 
         @case ('productos') {
           <section class="panel">
@@ -174,8 +181,15 @@
                 <span class="eyebrow">CATÁLOGO</span>
                 <h3>Inventario de productos</h3>
               </div>
-              <span class="demo-indicator">SOLO LECTURA</span>
-            </div>
+              <button type="button" (click)="abrirNuevoProducto()">
+              + NUEVO PRODUCTO</button>
+              </div>
+              
+          @if (productoGuardado()) {
+            <p role="status" style="color: #77e7b2">
+            {{ productoGuardado() }}
+          </p>
+    }
 
             <input
               class="search-input"

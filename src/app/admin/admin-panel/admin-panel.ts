@@ -1,82 +1,129 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { signOut } from 'firebase/auth';
+
 import { firebaseAuth } from '../../core/firebase.config';
+import {
+  ProductosService,
+  ProductoFirebase
+} from '../../core/services/productos';
 
-type Seccion = 'dashboard' | 'productos' | 'packs' | 'configuracion';
+import { AdminProductForm } from '../admin-product-form/admin-product-form';
 
-interface ProductoAdmin {
-  id: number;
-  nombre: string;
-  marca: string;
-  categoria: 'Nicho' | 'Árabe' | 'Diseñador';
-  precioDesde: number;
-  stock: number;
-  activo: boolean;
-}
+// Secciones disponibles en el panel
+type Seccion =
+  | 'dashboard'
+  | 'productos'
+  | 'nuevo-producto'
+  | 'packs'
+  | 'configuracion';
 
 @Component({
   selector: 'app-admin-panel',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, AdminProductForm],
   templateUrl: './admin-panel.html',
   styleUrl: './admin-panel.scss'
 })
 export class AdminPanel {
-  
-constructor(private router: Router) {}
 
-async cerrarSesion(): Promise<void> {
-  try {
-    await signOut(firebaseAuth);
-    await this.router.navigateByUrl('/admin/login');
-  } catch (error) {
-    console.error('No se pudo cerrar sesión:', error);
-    alert('Ocurrió un problema al cerrar la sesión.');
-  }
-}
+  // Servicios
+  private readonly router = inject(Router);
+  private readonly productosService = inject(ProductosService);
 
+  // Navegación
   readonly seccion = signal<Seccion>('dashboard');
   readonly menuAbierto = signal(false);
   readonly busqueda = signal('');
 
-  // Información de demostración, no sincronizada con la tienda.
-  readonly productos = signal<ProductoAdmin[]>([
-    {
-      id: 1, nombre: 'Baccarat Rouge 540',
-      marca: 'Maison Francis Kurkdjian',
-      categoria: 'Nicho', precioDesde: 28,
-      stock: 8, activo: true
-    },
-    {
-      id: 2, nombre: 'Khamrah',
-      marca: 'Lattafa',
-      categoria: 'Árabe', precioDesde: 10,
-      stock: 15, activo: true
-    },
-    {
-      id: 3, nombre: 'Sauvage',
-      marca: 'Dior',
-      categoria: 'Diseñador', precioDesde: 12,
-      stock: 8, activo: true
-    }
-  ]);
+  // Estado de Firebase
+  readonly productosFirebase = signal<ProductoFirebase[]>([]);
+  readonly cargandoProductos = signal(false);
+  readonly errorProductos = signal('');
 
-  readonly totalProductos = computed(() => this.productos().length);
-  readonly stockBajo = computed(() =>
-    this.productos().filter(p => p.stock <= 8).length
+  // Mensaje después de registrar un producto
+  readonly productoGuardado = signal('');
+
+  constructor() {
+    // Cargar los productos guardados en Firebase
+    void this.cargarProductos();
+  }
+
+  // ====================================
+  // PRODUCTOS DE FIREBASE
+  // ====================================
+
+  async cargarProductos(): Promise<void> {
+    this.cargandoProductos.set(true);
+    this.errorProductos.set('');
+
+    try {
+      const productos = await this.productosService.listar();
+      this.productosFirebase.set(productos);
+    } catch (error) {
+      console.error('Error leyendo productos:', error);
+
+      this.errorProductos.set(
+        'No se pudieron cargar los productos desde Firebase.'
+      );
+    } finally {
+      this.cargandoProductos.set(false);
+    }
+  }
+
+  // Adaptar los productos de Firebase para mostrarlos en la tabla
+  readonly inventario = computed(() =>
+    this.productosFirebase().map(p => ({
+      id: p.id ?? '',
+      nombre: p.nombre,
+      marca: p.marca,
+      categoria: p.categoria,
+
+      precioDesde: p.presentaciones.length > 0
+        ? Math.min(...p.presentaciones.map(v => v.precio))
+        : 0,
+
+      stock: p.presentaciones.reduce(
+        (total, variante) => total + variante.stock,
+        0
+      ),
+
+      activo: p.publicado
+    }))
   );
 
-  readonly resultados = computed(() => {
-    const termino = this.busqueda().toLocaleLowerCase('es').trim();
+  // ====================================
+  // ESTADÍSTICAS DEL DASHBOARD
+  // ====================================
 
-    return this.productos().filter(p =>
+  readonly totalProductos = computed(() =>
+    this.inventario().length
+  );
+
+  readonly stockBajo = computed(() =>
+    this.inventario().filter(p => p.stock <= 8).length
+  );
+
+  // ====================================
+  // BUSCADOR
+  // ====================================
+
+  readonly resultados = computed(() => {
+    const termino = this.busqueda()
+      .trim()
+      .toLocaleLowerCase('es');
+
+    return this.inventario().filter(p =>
       `${p.nombre} ${p.marca} ${p.categoria}`
         .toLocaleLowerCase('es')
         .includes(termino)
     );
   });
+
+  // ====================================
+  // NAVEGACIÓN DEL PANEL
+  // ====================================
 
   navegar(seccion: Seccion): void {
     this.seccion.set(seccion);
@@ -85,14 +132,65 @@ async cerrarSesion(): Promise<void> {
 
   titulo(): string {
     switch (this.seccion()) {
-      case 'productos': return 'Gestión de productos';
-      case 'packs': return 'Packs promocionales';
-      case 'configuracion': return 'Configuración';
-      default: return 'Dashboard';
+      case 'productos':
+        return 'Gestión de productos';
+
+      case 'nuevo-producto':
+        return 'Nuevo producto';
+
+      case 'packs':
+        return 'Packs promocionales';
+
+      case 'configuracion':
+        return 'Configuración';
+
+      default:
+        return 'Dashboard';
     }
   }
 
+  // ====================================
+  // AGREGAR PRODUCTOS
+  // ====================================
+
+  abrirNuevoProducto(): void {
+    this.productoGuardado.set('');
+    this.navegar('nuevo-producto');
+  }
+
+  async alGuardarProducto(id: string): Promise<void> {
+    this.productoGuardado.set(
+      `Producto guardado en Firebase correctamente. ID: ${id}`
+    );
+
+    // Actualizar la lista con los productos reales
+    await this.cargarProductos();
+
+    // Regresar a la tabla de productos
+    this.navegar('productos');
+  }
+
+  // ====================================
+  // FORMATO DE PRECIOS
+  // ====================================
+
   precio(valor: number): string {
     return `S/ ${valor.toFixed(2)}`;
+  }
+
+  // ====================================
+  // CERRAR SESIÓN
+  // ====================================
+
+  async cerrarSesion(): Promise<void> {
+    try {
+      await signOut(firebaseAuth);
+
+      await this.router.navigateByUrl('/admin/login');
+    } catch (error) {
+      console.error('No se pudo cerrar sesión:', error);
+
+      alert('Ocurrió un problema al cerrar la sesión.');
+    }
   }
 }

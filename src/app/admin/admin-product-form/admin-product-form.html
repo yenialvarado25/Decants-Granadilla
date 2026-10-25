@@ -1,0 +1,162 @@
+<div class="editor">
+  <div class="editor-heading">
+    <div>
+      <span>INVENTARIO / NUEVO PRODUCTO</span>
+      <h2>Editor de perfume</h2>
+      <p>Configura el producto y sus presentaciones.</p>
+    </div>
+
+    <button type="button" class="secondary" (click)="cancelar.emit()">
+      ← Volver
+    </button>
+  </div>
+
+  <form (ngSubmit)="guardar()" #form="ngForm">
+    <div class="editor-grid">
+      <section class="editor-card">
+        <h3>Información del producto</h3>
+
+        <div class="fields">
+          <label>
+            Nombre del perfume *
+            <input name="nombre" [(ngModel)]="nombre" required
+              placeholder="Ej. Khamrah" maxlength="120">
+          </label>
+
+          <label>
+            Marca *
+            <input name="marca" [(ngModel)]="marca" required
+              placeholder="Ej. Lattafa" maxlength="120">
+          </label>
+
+          <label>
+            Categoría
+            <select name="categoria" [(ngModel)]="categoria">
+              <option value="arabe">Árabe</option>
+              <option value="nicho">Nicho</option>
+              <option value="disenador">Diseñador</option>
+            </select>
+          </label>
+
+          <label>
+            Género
+            <select name="genero" [(ngModel)]="genero">
+              <option value="hombre">Hombre</option>
+              <option value="mujer">Mujer</option>
+              <option value="unisex">Unisex</option>
+            </select>
+          </label>
+
+          <label>
+            Familia olfativa
+            <input name="familia" [(ngModel)]="familia"
+              placeholder="Ej. Amaderada especiada">
+          </label>
+
+          <label>
+            Notas olfativas
+            <input name="notas" [(ngModel)]="notasTexto"
+              placeholder="Vainilla, canela, ámbar">
+            <small>Separa las notas con comas.</small>
+          </label>
+
+          <label class="full">
+            Descripción
+            <textarea name="descripcion" [(ngModel)]="descripcion"
+              rows="4" maxlength="1000"
+              placeholder="Describe el aroma y sus características."></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section class="editor-card">
+        <h3>Fotografía y publicación</h3>
+
+        <div class="image-preview">
+          @if (imagen) {
+            <img [src]="imagen" alt="Vista previa del perfume"
+              (error)="error.set('No se pudo cargar la imagen.')">
+          } @else {
+            <div class="image-placeholder">
+              <strong>DG</strong>
+              <span>FOTOGRAFÍA PENDIENTE</span>
+            </div>
+          }
+        </div>
+
+        <label>
+          URL de fotografía (opcional)
+          <input name="imagen" [(ngModel)]="imagen"
+            placeholder="https://ejemplo.com/perfume.jpg">
+        </label>
+
+        <p class="help">
+          Por ahora puedes registrar el producto sin fotografía.
+          La subida directa de archivos se implementará después.
+        </p>
+
+        <label class="toggle">
+          <input type="checkbox" name="publicado"
+            [(ngModel)]="publicado">
+          <span>Marcar como publicado</span>
+        </label>
+
+        <p class="help">
+          Este estado se guardará en Firestore. La tienda pública
+          todavía no lee esos productos.
+        </p>
+      </section>
+    </div>
+
+    <section class="editor-card variants">
+      <div class="variants-heading">
+        <div>
+          <h3>Presentaciones y stock</h3>
+          <p>Define precios y existencias por tamaño.</p>
+        </div>
+        <span>PRECIOS EN SOLES (S/)</span>
+      </div>
+
+      @for (p of presentaciones; track p.nombre; let i = $index) {
+        <div class="variant-row">
+          <label class="variant-check">
+            <input type="checkbox"
+              [name]="'activo-' + i"
+              [(ngModel)]="p.activo">
+            <strong>{{ p.nombre }}</strong>
+          </label>
+
+          <label>
+            Precio S/
+            <input type="number" min="0.01" step="0.01"
+              [name]="'precio-' + i" [(ngModel)]="p.precio"
+              [disabled]="!p.activo">
+          </label>
+
+          <label>
+            Stock
+            <input type="number" min="0" step="1"
+              [name]="'stock-' + i" [(ngModel)]="p.stock"
+              [disabled]="!p.activo">
+          </label>
+        </div>
+      }
+    </section>
+
+    @if (error()) {
+      <p class="error-message" role="alert">{{ error() }}</p>
+    }
+
+    <div class="form-actions">
+      <button type="button" class="secondary" (click)="cancelar.emit()">
+        Cancelar
+      </button>
+
+      <button type="submit" class="primary"
+        [disabled]="guardando() || form.invalid">
+        {{ guardando() ? 'GUARDANDO...' : 'GUARDAR PRODUCTO ↗' }}
+      </button>
+    </div>
+  </form>
+</div>
+
