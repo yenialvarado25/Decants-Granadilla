@@ -3,13 +3,14 @@ import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
+import { ProductosService, ProductoFirebase } from './core/services/productos';
 
 type Categoria = 'nicho' | 'arabe' | 'disenador';
 type Genero = 'hombre' | 'mujer' | 'unisex';
 type Formato = 'decant' | 'entero';
 interface Presentacion { id: string; nombre: string; tipo: Formato; precio: number; stock: number; }
 interface Producto {
-  id: number; nombre: string; marca: string; categoria: Categoria; genero: Genero;
+  id: string; nombre: string; marca: string; categoria: Categoria; genero: Genero;
   familia: string; descripcion: string; notas: string[]; imagen?: string;
   presentaciones: Presentacion[]; destacado?: boolean; nuevo?: boolean;
 }
@@ -28,6 +29,7 @@ export class App {
   private readonly router = inject(Router);
 readonly esAdmin = signal(this.router.url.startsWith('/admin'));
 
+  
 constructor() {
   this.router.events.pipe(
     filter((event): event is NavigationEnd =>
@@ -35,11 +37,20 @@ constructor() {
     ),
     takeUntilDestroyed()
   ).subscribe(event => {
-    this.esAdmin.set(
-      event.urlAfterRedirects.startsWith('/admin')
-    );
+    const esRutaAdmin = event.urlAfterRedirects.startsWith('/admin');
+
+    this.esAdmin.set(esRutaAdmin);
+
+    if (!esRutaAdmin) {
+      void this.cargarCatalogo();
+    }
   });
+
+  if (!this.esAdmin()) {
+    void this.cargarCatalogo();
+  }
 }
+
   // Número del negocio: prefijo 51 + 9 dígitos, sin espacios ni signos.
   readonly whatsapp = '51921435182';
   readonly categorias: { id: Categoria; titulo: string; numero: string; descripcion: string }[] = [
@@ -49,20 +60,51 @@ constructor() {
   ];
 
   // Datos ilustrativos: modifica precios, stocks y packs antes de vender.
-  readonly productos = signal<Producto[]>([
-    { id: 1, nombre: 'Baccarat Rouge 540', marca: 'Maison Francis Kurkdjian', categoria: 'nicho', genero: 'unisex', familia: 'Ámbar floral', descripcion: 'Sofisticado, envolvente y luminoso.', notas: ['Azafrán', 'Jazmín', 'Ámbar'], destacado: true,
-      presentaciones: [{ id: '2', nombre: '2 ml', tipo: 'decant', precio: 28, stock: 8 }, { id: '3', nombre: '3 ml', tipo: 'decant', precio: 38, stock: 8 }, { id: '5', nombre: '5 ml', tipo: 'decant', precio: 65, stock: 8 }, { id: '10', nombre: '10 ml', tipo: 'decant', precio: 120, stock: 4 }] },
-    { id: 2, nombre: 'Khamrah', marca: 'Lattafa', categoria: 'arabe', genero: 'unisex', familia: 'Gourmand especiada', descripcion: 'Cálido, dulce y de gran personalidad.', notas: ['Canela', 'Praliné', 'Vainilla'], destacado: true,
-      presentaciones: [{ id: '2', nombre: '2 ml', tipo: 'decant', precio: 10, stock: 12 }, { id: '3', nombre: '3 ml', tipo: 'decant', precio: 14, stock: 12 }, { id: '5', nombre: '5 ml', tipo: 'decant', precio: 18, stock: 12 }, { id: '10', nombre: '10 ml', tipo: 'decant', precio: 32, stock: 8 }, { id: 'full', nombre: 'Frasco entero', tipo: 'entero', precio: 165, stock: 3 }] },
-    { id: 3, nombre: 'Sauvage', marca: 'Dior', categoria: 'disenador', genero: 'hombre', familia: 'Aromática fresca', descripcion: 'Energía fresca con presencia magnética.', notas: ['Bergamota', 'Pimienta', 'Ambroxan'], destacado: true,
-      presentaciones: [{ id: '2', nombre: '2 ml', tipo: 'decant', precio: 12, stock: 8 }, { id: '3', nombre: '3 ml', tipo: 'decant', precio: 17, stock: 8 }, { id: '5', nombre: '5 ml', tipo: 'decant', precio: 30, stock: 8 }, { id: '10', nombre: '10 ml', tipo: 'decant', precio: 55, stock: 5 }] },
-    { id: 4, nombre: 'Oud for Greatness', marca: 'Initio', categoria: 'nicho', genero: 'unisex', familia: 'Amaderada especiada', descripcion: 'Oud profundo, elegante y especiado.', notas: ['Oud', 'Lavanda', 'Azafrán'], nuevo: true,
-      presentaciones: [{ id: '2', nombre: '2 ml', tipo: 'decant', precio: 32, stock: 4 }, { id: '3', nombre: '3 ml', tipo: 'decant', precio: 44, stock: 4 }, { id: '5', nombre: '5 ml', tipo: 'decant', precio: 75, stock: 4 }, { id: '10', nombre: '10 ml', tipo: 'decant', precio: 145, stock: 2 }] },
-    { id: 5, nombre: 'Yara', marca: 'Lattafa', categoria: 'arabe', genero: 'mujer', familia: 'Floral gourmand', descripcion: 'Suave, cremoso y delicadamente dulce.', notas: ['Orquídea', 'Vainilla', 'Almizcle'],
-      presentaciones: [{ id: '2', nombre: '2 ml', tipo: 'decant', precio: 9, stock: 12 }, { id: '3', nombre: '3 ml', tipo: 'decant', precio: 13, stock: 12 }, { id: '5', nombre: '5 ml', tipo: 'decant', precio: 15, stock: 12 }, { id: '10', nombre: '10 ml', tipo: 'decant', precio: 27, stock: 8 }, { id: 'full', nombre: 'Frasco entero', tipo: 'entero', precio: 135, stock: 2 }] },
-    { id: 6, nombre: 'Libre', marca: 'Yves Saint Laurent', categoria: 'disenador', genero: 'mujer', familia: 'Floral aromática', descripcion: 'Una interpretación moderna y segura.', notas: ['Lavanda', 'Azahar', 'Vainilla'],
-      presentaciones: [{ id: '2', nombre: '2 ml', tipo: 'decant', precio: 14, stock: 7 }, { id: '3', nombre: '3 ml', tipo: 'decant', precio: 20, stock: 7 }, { id: '5', nombre: '5 ml', tipo: 'decant', precio: 35, stock: 7 }, { id: '10', nombre: '10 ml', tipo: 'decant', precio: 65, stock: 5 }] }
-  ]);
+    
+readonly productos = signal<Producto[]>([]);
+
+readonly cargandoCatalogo = signal(false);
+readonly errorCatalogo = signal('');
+
+private readonly productosService = inject(ProductosService);
+
+async cargarCatalogo(): Promise<void> {
+  this.cargandoCatalogo.set(true);
+  this.errorCatalogo.set('');
+
+  try {
+    const registros = await this.productosService.listarPublicados();
+
+    const productos = registros.map(p => ({
+      id: p.id ?? '',
+      nombre: p.nombre,
+      marca: p.marca,
+      categoria: p.categoria,
+      genero: p.genero,
+      familia: p.familia,
+      descripcion: p.descripcion,
+      notas: p.notas,
+      imagen: p.imagen,
+      presentaciones: p.presentaciones.map((v, i) => ({
+        id: `${v.tipo}-${i}`,
+        nombre: v.nombre,
+        tipo: v.tipo,
+        precio: v.precio,
+        stock: v.stock
+      }))
+    }));
+
+    this.productos.set(productos);
+  } catch (error) {
+    console.error('Error cargando catálogo:', error);
+
+    this.errorCatalogo.set(
+      'No pudimos cargar el catálogo. Inténtalo nuevamente.'
+    );
+  } finally {
+    this.cargandoCatalogo.set(false);
+  }
+}
 
   // Los packs son productos independientes: no mezclar combinaciones con un solo perfume.
   readonly packs = signal<Pack[]>([

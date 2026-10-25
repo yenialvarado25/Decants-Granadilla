@@ -308,6 +308,22 @@
             </select>
           </label>
         </div>
+            
+@if (cargandoCatalogo()) {
+  <p role="status" class="catalog-feedback">
+    Cargando perfumes...
+  </p>
+}
+
+        
+        @if (errorCatalogo()) {
+          <div class="catalog-feedback" role="alert">
+          <p>{{ errorCatalogo() }}</p>
+          <button type="button" (click)="cargarCatalogo()">
+          Reintentar
+          </button>
+          </div>
+        }
 
         <div class="products-grid">
           @for (p of visibles(); track p.id) {
@@ -382,14 +398,22 @@
                 </button>
               </div>
             </article>
-          } @empty {
+          } 
+          @empty {
+            @if (!cargandoCatalogo() && !errorCatalogo()) {
             <div class="empty-state">
-              No encontramos coincidencias.
-              <button type="button" (click)="limpiarFiltros()">
-                Ver todos los perfumes
-              </button>
+            <h3>No hay perfumes disponibles</h3>
+            <p>
+            Actualmente no encontramos perfumes publicados
+            que coincidan con tu búsqueda.
+            </p>
+            <button type="button" (click)="limpiarFiltros()">
+             Ver todas las categorías
+            </button>
             </div>
+            }
           }
+
         </div>
       </div>
     </div>

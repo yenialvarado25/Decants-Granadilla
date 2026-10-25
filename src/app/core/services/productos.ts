@@ -6,7 +6,8 @@ import {
   query,
   orderBy,
   doc,
-  updateDoc
+  updateDoc,
+  where
 } from 'firebase/firestore';
 
 import { firestore } from '../firebase.config';
@@ -48,6 +49,20 @@ export class ProductosService {
       this.referencia,
       orderBy('creadoEn', 'desc')
     );
+
+    const resultado = await getDocs(consulta);
+
+    return resultado.docs.map(documento => ({
+      ...documento.data(),
+      id: documento.id
+    } as ProductoFirebase));
+  }
+    
+  async listarPublicados(): Promise<ProductoFirebase[]> {
+    const consulta = query(
+    this.referencia,
+    where('publicado', '==', true)
+  );
 
     const resultado = await getDocs(consulta);
 

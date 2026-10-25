@@ -1149,3 +1149,22 @@ button:disabled {
     gap: 14px;
   }
 }
+
+.catalog-feedback {
+  padding: 20px;
+  margin-bottom: 20px;
+  color: #a8c9f5;
+  background: #10213a;
+  border: 1px solid #3265c855;
+  border-radius: 8px;
+
+  button {
+    margin-top: 10px;
+    padding: 10px 16px;
+    background: #3265c8;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+}
