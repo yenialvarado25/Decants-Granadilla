@@ -51,6 +51,7 @@ export class AdminProductForm {
   notasTexto = '';
   imagen = '';
   publicado = false;
+  destacado = false;
 
   readonly guardando = signal(false);
   readonly error = signal('');
@@ -75,6 +76,7 @@ export class AdminProductForm {
     this.notasTexto = producto?.notas?.join(', ') ?? '';
     this.imagen = producto?.imagen ?? '';
     this.publicado = producto?.publicado ?? false;
+    this.destacado = producto?.destacado ?? false;
 
     const formatos: Array<{
       nombre: string;
@@ -159,7 +161,8 @@ export class AdminProductForm {
         .filter(Boolean),
       imagen: this.imagen.trim(),
       presentaciones: variantes,
-      publicado: this.publicado
+      publicado: this.publicado,
+      destacado: this.destacado,
     };
 
     this.guardando.set(true);

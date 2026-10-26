@@ -31,8 +31,10 @@ export interface ProductoFirebase {
   imagen: string;
   presentaciones: PresentacionProducto[];
   publicado: boolean;
+  destacado?: boolean;
   creadoEn: number;
-  actualizadoEn?: number;         
+  actualizadoEn?: number;     
+  
 }
 
 @Injectable({

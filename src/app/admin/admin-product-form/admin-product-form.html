@@ -106,6 +106,21 @@
             [(ngModel)]="publicado">
           <span>Marcar como publicado</span>
         </label>
+          
+        <label class="toggle">
+          <input
+             type="checkbox"
+             name="destacado"
+             [(ngModel)]="destacado"
+             >
+
+          <span>Destacar en la página de inicio</span>
+        </label>
+
+        <p class="help">
+          Este perfume aparecerá en la sección
+          «Aromas que dejan huella» cuando esté publicado.
+        </p>
 
         <p class="help">
           Este estado se guardará en Firestore. La tienda pública

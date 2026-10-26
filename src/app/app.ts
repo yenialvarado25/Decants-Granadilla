@@ -85,6 +85,7 @@ async cargarCatalogo(): Promise<void> {
       descripcion: p.descripcion,
       notas: p.notas,
       imagen: p.imagen,
+      destacado: p.destacado,
       presentaciones: p.presentaciones.map((v, i) => ({
         id: `${v.tipo}-${i}`,
         nombre: v.nombre,
