@@ -189,34 +189,56 @@
       </a>
     </div>
 
-    <div class="picks-grid">
-      @for (p of destacados(); track p.id) {
-        <article class="pick-card">
-          <div class="pick-meta">
-            <span>{{ p.categoria.toUpperCase() }}</span>
-            <span>DESTACADO</span>
-          </div>
+      
+<div class="picks-grid">
+  @for (p of destacados(); track p.id) {
 
-          <span class="pick-number">
-            0{{ $index + 1 }}
+    <article class="pick-card">
+
+      <div class="pick-meta">
+        <span>{{ p.categoria.toUpperCase() }}</span>
+        <span>DESTACADO</span>
+      </div>
+
+      <!-- FOTOGRAFÍA DEL PERFUME -->
+      <div class="pick-image">
+
+        @if (p.imagen) {
+          <img
+            [src]="p.imagen"
+            [alt]="p.nombre"
+            loading="lazy"
+          />
+        } @else {
+          <span class="pick-placeholder">
+            DG ✦
           </span>
+        }
 
-          <div>
-            <small>{{ p.marca }}</small>
-            <h3>{{ p.nombre }}</h3>
-            <p>{{ p.descripcion }}</p>
-          </div>
+      </div>
 
-          <button
-            type="button"
-            class="text-action"
-            (click)="irCatalogo(p.categoria)"
-          >
-            DESCUBRIR ↗
-          </button>
-        </article>
-      }
-    </div>
+      <!-- INFORMACIÓN -->
+      <div class="pick-info">
+        <small>{{ p.marca }}</small>
+
+        <h3>{{ p.nombre }}</h3>
+
+        <p>{{ p.descripcion }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="text-action"
+        (click)="irCatalogo(p.categoria)"
+      >
+        DESCUBRIR FRAGANCIA ↗
+      </button>
+
+    </article>
+
+  }
+</div>
+
   </section>
 
   <!-- CATÁLOGO -->
